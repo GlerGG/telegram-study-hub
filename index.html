@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Study Hub для Telegram</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #627284;
+      --line: #d8e0e7;
+      --panel: #ffffff;
+      --page: #f4f7fa;
+      --blue: #2481cc;
+      --green: #28a745;
+      --red: #d94841;
+      --amber: #d9901f;
+      --violet: #7b61ff;
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      background: #f8fafc;
+    }
+
+    .sidebar {
+      background: #17212b;
+      color: white;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 100vh;
+    }
+
+    .brand {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #2481cc, #28a745);
+      font-weight: 800;
+    }
+
+    .brand-title {
+      font-weight: 750;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      color: #aebdcc;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      border: 0;
+      border-radius: var(--radius);
+      padding: 11px 12px;
+      color: #dfe8ef;
+      background: transparent;
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      align-items: center;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav button.active {
+      background: #243443;
+      color: white;
+    }
+
+    .role-box {
+      margin-top: auto;
+      border: 1px solid #33485b;
+      border-radius: var(--radius);
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      background: #1d2b38;
+    }
+
+    .role-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 999px;
+      border: 0;
+      padding: 3px;
+      background: #526477;
+      cursor: pointer;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .switch.on {
+      background: var(--green);
+      justify-content: flex-end;
+    }
+
+    .knob {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    .main {
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0 4px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .hint {
+      color: var(--muted);
+      margin: 5px 0 0;
+      line-height: 1.45;
+    }
+
+    .primary, .ghost, .danger {
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      min-height: 40px;
+      padding: 9px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: white;
+    }
+
+    .ghost {
+      background: white;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .danger {
+      background: #fff3f2;
+      border-color: #f2beb9;
+      color: var(--red);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 170px 170px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--ink);
+      min-height: 40px;
+      padding: 9px 10px;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .section {
+      display: none;
+      gap: 14px;
+    }
+
+    .section.active {
+      display: grid;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+      gap: 12px;
+    }
+
+    .folder-header {
+      display: none;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+    }
+
+    .folder-header.show {
+      display: grid;
+    }
+
+    .folder-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .folder-card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 8px 22px rgba(23, 33, 43, 0.08);
+    }
+
+    .folder-icon {
+      width: 54px;
+      height: 44px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: linear-gradient(135deg, #2481cc, #28a745);
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .folder-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .material-visual {
+      width: 100%;
+      min-width: 0;
+      height: 108px;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 34px;
+      font-weight: 800;
+      overflow: hidden;
+    }
+
+    .visual-book { background: linear-gradient(135deg, #2481cc, #31b37b); }
+    .visual-photo { background: linear-gradient(135deg, #d9901f, #d94841); }
+    .visual-file { background: linear-gradient(135deg, #6d7d8f, #7b61ff); }
+
+    .card-title {
+      font-weight: 750;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .week-tabs {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      background: #e8eef4;
+      border-radius: var(--radius);
+      min-width: 220px;
+    }
+
+    .week-tabs button {
+      border: 0;
+      border-radius: 6px;
+      padding: 9px 12px;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .week-tabs button.active {
+      background: white;
+      color: var(--blue);
+      box-shadow: 0 1px 4px rgba(23, 33, 43, 0.12);
+    }
+
+    .tag {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #edf3f7;
+      color: #415267;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(300px, 340px);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .materials-list {
+      min-width: 0;
+    }
+
+    .schedule {
+      display: grid;
+      gap: 10px;
+    }
+
+    .day {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .day-head {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #eef5fb;
+      font-weight: 750;
+    }
+
+    .lesson {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      align-items: center;
+    }
+
+    .time {
+      font-weight: 750;
+      color: var(--blue);
+    }
+
+    .empty {
+      border: 1px dashed #b8c6d3;
+      border-radius: var(--radius);
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      background: white;
+    }
+
+    .access-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .person {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #e4edf5;
+      font-weight: 800;
+      color: #34495e;
+    }
+
+    .notice {
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: #fff8e8;
+      border: 1px solid #f0d498;
+      color: #6a4b0d;
+      display: none;
+    }
+
+    .notice.show { display: block; }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        min-height: auto;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .nav button {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        font-size: 13px;
+      }
+
+      .role-box {
+        margin-top: 0;
+      }
+
+      .topbar, .toolbar, .split {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lesson {
+        grid-template-columns: 62px minmax(0, 1fr);
+      }
+
+      .lesson button {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">U</div>
+        <div>
+          <div class="brand-title">Uni Channel Hub</div>
+          <div class="brand-subtitle">мини-приложение канала</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Разделы">
+        <button class="active" data-tab="materials"><span>📚</span><span>Материалы</span></button>
+        <button data-tab="schedule"><span>🗓</span><span>Расписание</span></button>
+        <button data-tab="access"><span>🔐</span><span>Права</span></button>
+      </nav>
+
+      <div class="role-box">
+        <div class="role-row">
+          <div>
+            <strong>Режим админа</strong>
+            <div class="brand-subtitle">добавление и правки</div>
+          </div>
+          <button class="switch on" id="adminSwitch" aria-label="Режим админа"><span class="knob"></span></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="notice" id="notice">У тебя включен режим просмотра. Добавлять материалы и менять расписание могут только админы.</div>
+
+      <section class="section active" id="materials">
+        <div class="topbar">
+          <div>
+            <h1>Материалы канала</h1>
+            <p class="hint">Учебники, фото и файлы можно разложить по предметам, типам и тегам.</p>
+          </div>
+          <button class="primary admin-only" id="showAddMaterial">＋ Добавить</button>
+        </div>
+
+        <div class="toolbar">
+          <input id="search" placeholder="Поиск внутри предметов по названию или тегу">
+          <select id="typeFilter">
+            <option value="all">Все типы</option>
+            <option value="book">Учебники</option>
+            <option value="photo">Фото</option>
+            <option value="file">Файлы</option>
+          </select>
+          <button class="ghost" id="allSubjectsButton" type="button">Все предметы</button>
+        </div>
+
+        <div class="folder-header" id="folderHeader">
+          <button class="ghost" id="backToFolders" type="button">← Предметы</button>
+          <div>
+            <div class="card-title" id="activeSubjectTitle"></div>
+            <div class="meta">Внутри лежат фото, учебники, методички и другие файлы по предмету.</div>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="grid" id="materialsGrid"></div>
+          <form class="card admin-only" id="materialForm">
+            <div class="card-title">Новый материал</div>
+            <div class="field">
+              <label for="materialTitle">Название</label>
+              <input id="materialTitle" required placeholder="Например: Конспект лекции 3">
+            </div>
+            <div class="field">
+              <label for="materialType">Тип</label>
+              <select id="materialType">
+                <option value="book">Учебник</option>
+                <option value="photo">Фото</option>
+                <option value="file">Файл</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="materialSubject">Предмет</label>
+              <input id="materialSubject" required placeholder="Например: Матанализ">
+            </div>
+            <div class="field">
+              <label for="materialTags">Теги</label>
+              <input id="materialTags" placeholder="лекция, pdf, экзамен">
+            </div>
+            <div class="field">
+              <label for="materialLink">Ссылка или имя файла</label>
+              <input id="materialLink" placeholder="Telegram file / Google Drive / PDF">
+            </div>
+            <button class="primary" type="submit">Сохранить материал</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="section" id="schedule">
+        <div class="topbar">
+          <div>
+            <h1>Расписание</h1>
+            <p class="hint">Можно переключать первую и вторую неделю, а админ меняет пары, аудитории и примечания.</p>
+          </div>
+          <button class="primary admin-only" id="showAddLesson">＋ Добавить пару</button>
+        </div>
+
+        <div class="week-tabs" id="weekTabs" aria-label="Неделя расписания">
+          <button class="active" data-week="1" type="button">1 неделя</button>
+          <button data-week="2" type="button">2 неделя</button>
+        </div>
+
+        <div class="split">
+          <div class="schedule" id="scheduleList"></div>
+          <form class="card admin-only" id="lessonForm">
+            <div class="card-title">Изменить расписание</div>
+            <div class="field">
+              <label for="lessonWeek">Неделя</label>
+              <select id="lessonWeek">
+                <option value="1">1 неделя</option>
+                <option value="2">2 неделя</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lessonDay">День</label>
+              <select id="lessonDay">
+                <option>Понедельник</option>
+                <option>Вторник</option>
+                <option>Среда</option>
+                <option>Четверг</option>
+                <option>Пятница</option>
+                <option>Суббота</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lessonTime">Время</label>
+              <input id="lessonTime" required value="09:00">
+            </div>
+            <div class="field">
+              <label for="lessonName">Предмет</label>
+              <input id="lessonName" required placeholder="Например: Английский язык">
+            </div>
+            <div class="field">
+              <label for="lessonPlace">Аудитория / ссылка</label>
+              <input id="lessonPlace" placeholder="305 корпус Б">
+            </div>
+            <div class="field">
+              <label for="lessonNote">Примечание</label>
+              <textarea id="lessonNote" placeholder="Замена, дедлайн, преподаватель"></textarea>
+            </div>
+            <button class="primary" type="submit">Сохранить пару</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="section" id="access">
+        <div class="topbar">
+          <div>
+            <h1>Права доступа</h1>
+            <p class="hint">Добавлять материалы и менять расписание смогут только люди из списка админов.</p>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="access-list" id="accessList"></div>
+          <form class="card admin-only" id="accessForm">
+            <div class="card-title">Выдать права</div>
+            <div class="field">
+              <label for="adminName">Имя</label>
+              <input id="adminName" required placeholder="Например: Аня">
+            </div>
+            <div class="field">
+              <label for="adminHandle">Telegram username</label>
+              <input id="adminHandle" required placeholder="@username">
+            </div>
+            <button class="primary" type="submit">Добавить админа</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const seedMaterials = [
+      { id: 1, title: "Учебник по матанализу", type: "book", subject: "Матанализ", tags: ["pdf", "1 курс"], link: "analysis.pdf" },
+      { id: 2, title: "Фото доски с семинара", type: "photo", subject: "Физика", tags: ["семинар", "задачи"], link: "album: physics" },
+      { id: 3, title: "Методичка к лабораторной", type: "file", subject: "Программирование", tags: ["лаба", "дедлайн"], link: "lab-guide.docx" }
+    ];
+
+    const seedLessons = [
+      { id: 1, week: "1", day: "Понедельник", time: "09:00", name: "Матанализ", place: "Ауд. 214", note: "Практика" },
+      { id: 2, week: "1", day: "Понедельник", time: "10:40", name: "Физика", place: "Корпус Б, 305", note: "Взять тетрадь с задачами" },
+      { id: 3, week: "2", day: "Среда", time: "13:20", name: "Программирование", place: "Компьютерный класс", note: "Сдать лабораторную" },
+      { id: 4, week: "2", day: "Пятница", time: "11:00", name: "Матанализ", place: "Ауд. 118", note: "Лекция вместо практики" }
+    ];
+
+    const seedAdmins = [
+      { id: 1, name: "Ты", handle: "@owner", role: "Владелец" },
+      { id: 2, name: "Староста", handle: "@starosta", role: "Админ" }
+    ];
+
+    let materials = JSON.parse(localStorage.getItem("studyhub_materials") || "null") || seedMaterials;
+    let lessons = JSON.parse(localStorage.getItem("studyhub_lessons") || "null") || seedLessons;
+    let admins = JSON.parse(localStorage.getItem("studyhub_admins") || "null") || seedAdmins;
+    let isAdmin = true;
+    let activeSubject = null;
+    let activeWeek = "1";
+
+    const typeNames = { book: "Учебник", photo: "Фото", file: "Файл" };
+    const typeLetters = { book: "PDF", photo: "IMG", file: "DOC" };
+
+    const save = () => {
+      localStorage.setItem("studyhub_materials", JSON.stringify(materials));
+      localStorage.setItem("studyhub_lessons", JSON.stringify(lessons));
+      localStorage.setItem("studyhub_admins", JSON.stringify(admins));
+    };
+
+    function setTab(tab) {
+      document.querySelectorAll(".nav button").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab));
+      document.querySelectorAll(".section").forEach(section => section.classList.toggle("active", section.id === tab));
+    }
+
+    function renderAdminMode() {
+      document.getElementById("adminSwitch").classList.toggle("on", isAdmin);
+      document.getElementById("notice").classList.toggle("show", !isAdmin);
+      document.querySelectorAll(".admin-only").forEach(item => item.style.display = isAdmin ? "" : "none");
+    }
+
+    function renderMaterials() {
+      const search = document.getElementById("search").value.trim().toLowerCase();
+      const type = document.getElementById("typeFilter").value;
+      const grid = document.getElementById("materialsGrid");
+      const folderHeader = document.getElementById("folderHeader");
+      const activeSubjectTitle = document.getElementById("activeSubjectTitle");
+      const hasFilters = Boolean(search) || type !== "all";
+      const subjects = [...new Set(materials.map(item => item.subject))].sort();
+
+      folderHeader.classList.toggle("show", Boolean(activeSubject));
+      activeSubjectTitle.textContent = activeSubject ? `Папка: ${activeSubject}` : "";
+
+      if (!activeSubject && !hasFilters) {
+        grid.innerHTML = subjects.map(subject => {
+          const subjectMaterials = materials.filter(item => item.subject === subject);
+          const counts = subjectMaterials.reduce((result, item) => {
+            result[item.type] += 1;
+            return result;
+          }, { book: 0, photo: 0, file: 0 });
+
+          return `
+            <button class="folder-card" data-open-subject="${escapeHtml(subject)}" type="button">
+              <div class="folder-icon">${escapeHtml(subject.slice(0, 1).toUpperCase())}</div>
+              <div>
+                <div class="card-title">${escapeHtml(subject)}</div>
+                <div class="meta">${subjectMaterials.length} материалов внутри</div>
+              </div>
+              <div class="folder-stats">
+                <span class="tag">Учебники: ${counts.book}</span>
+                <span class="tag">Фото: ${counts.photo}</span>
+                <span class="tag">Файлы: ${counts.file}</span>
+              </div>
+            </button>
+          `;
+        }).join("");
+        return;
+      }
+
+      const list = materials.filter(item => {
+        const haystack = [item.title, item.subject, item.link, ...item.tags].join(" ").toLowerCase();
+        return (!search || haystack.includes(search)) && (type === "all" || item.type === type) && (!activeSubject || item.subject === activeSubject);
+      });
+
+      if (!list.length) {
+        grid.innerHTML = '<div class="empty">В этой папке пока ничего нет или фильтр ничего не нашел.</div>';
+        return;
+      }
+
+      grid.innerHTML = list.map(item => `
+        <article class="card">
+          <div class="material-visual visual-${item.type}">${typeLetters[item.type]}</div>
+          <div>
+            <div class="card-title">${escapeHtml(item.title)}</div>
+            <div class="meta">${typeNames[item.type]} · ${escapeHtml(item.subject)} · ${escapeHtml(item.link || "без ссылки")}</div>
+          </div>
+          <div class="tags">${item.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+          ${isAdmin ? `<button class="danger" data-delete-material="${item.id}">Удалить</button>` : ""}
+        </article>
+      `).join("");
+    }
+
+    function renderSchedule() {
+      const days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+      const list = document.getElementById("scheduleList");
+      document.querySelectorAll("#weekTabs button").forEach(btn => btn.classList.toggle("active", btn.dataset.week === activeWeek));
+      list.innerHTML = days.map(day => {
+        const dayLessons = lessons.filter(item => (item.week || "1") === activeWeek && item.day === day).sort((a, b) => a.time.localeCompare(b.time));
+        const body = dayLessons.length ? dayLessons.map(item => `
+          <div class="lesson">
+            <div class="time">${escapeHtml(item.time)}</div>
+            <div>
+              <div class="card-title">${escapeHtml(item.name)}</div>
+              <div class="meta">${activeWeek} неделя · ${escapeHtml(item.place || "Место не указано")}${item.note ? " · " + escapeHtml(item.note) : ""}</div>
+            </div>
+            ${isAdmin ? `<button class="danger" data-delete-lesson="${item.id}">Удалить</button>` : ""}
+          </div>
+        `).join("") : '<div class="lesson"><div class="time">--:--</div><div class="meta">Пар нет</div></div>';
+
+        return `<div class="day"><div class="day-head"><span>${day}</span><span>${dayLessons.length}</span></div>${body}</div>`;
+      }).join("");
+    }
+
+    function renderAccess() {
+      const list = document.getElementById("accessList");
+      list.innerHTML = admins.map(admin => `
+        <div class="person">
+          <div class="avatar">${escapeHtml(admin.name.slice(0, 1).toUpperCase())}</div>
+          <div>
+            <div class="card-title">${escapeHtml(admin.name)}</div>
+            <div class="meta">${escapeHtml(admin.handle)} · ${escapeHtml(admin.role)}</div>
+          </div>
+          ${isAdmin && admin.role !== "Владелец" ? `<button class="danger" data-delete-admin="${admin.id}">Убрать</button>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function renderAll() {
+      renderAdminMode();
+      renderMaterials();
+      renderSchedule();
+      renderAccess();
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    document.querySelectorAll(".nav button").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
+    document.getElementById("adminSwitch").addEventListener("click", () => {
+      isAdmin = !isAdmin;
+      renderAll();
+    });
+
+    ["search", "typeFilter"].forEach(id => document.getElementById(id).addEventListener("input", renderMaterials));
+
+    document.getElementById("backToFolders").addEventListener("click", () => {
+      activeSubject = null;
+      document.getElementById("search").value = "";
+      document.getElementById("typeFilter").value = "all";
+      renderMaterials();
+    });
+
+    document.getElementById("allSubjectsButton").addEventListener("click", () => {
+      activeSubject = null;
+      document.getElementById("search").value = "";
+      document.getElementById("typeFilter").value = "all";
+      renderMaterials();
+    });
+
+    document.querySelectorAll("#weekTabs button").forEach(btn => btn.addEventListener("click", () => {
+      activeWeek = btn.dataset.week;
+      document.getElementById("lessonWeek").value = activeWeek;
+      renderSchedule();
+    }));
+
+    document.getElementById("materialForm").addEventListener("submit", event => {
+      event.preventDefault();
+      materials.unshift({
+        id: Date.now(),
+        title: document.getElementById("materialTitle").value,
+        type: document.getElementById("materialType").value,
+        subject: document.getElementById("materialSubject").value,
+        tags: document.getElementById("materialTags").value.split(",").map(tag => tag.trim()).filter(Boolean),
+        link: document.getElementById("materialLink").value
+      });
+      event.target.reset();
+      save();
+      renderAll();
+    });
+
+    document.getElementById("lessonForm").addEventListener("submit", event => {
+      event.preventDefault();
+      lessons.push({
+        id: Date.now(),
+        week: document.getElementById("lessonWeek").value,
+        day: document.getElementById("lessonDay").value,
+        time: document.getElementById("lessonTime").value,
+        name: document.getElementById("lessonName").value,
+        place: document.getElementById("lessonPlace").value,
+        note: document.getElementById("lessonNote").value
+      });
+      event.target.reset();
+      document.getElementById("lessonTime").value = "09:00";
+      document.getElementById("lessonWeek").value = activeWeek;
+      save();
+      renderAll();
+    });
+
+    document.getElementById("accessForm").addEventListener("submit", event => {
+      event.preventDefault();
+      admins.push({
+        id: Date.now(),
+        name: document.getElementById("adminName").value,
+        handle: document.getElementById("adminHandle").value,
+        role: "Админ"
+      });
+      event.target.reset();
+      save();
+      renderAll();
+    });
+
+    document.body.addEventListener("click", event => {
+      const materialId = event.target.dataset.deleteMaterial;
+      const lessonId = event.target.dataset.deleteLesson;
+      const adminId = event.target.dataset.deleteAdmin;
+      const subjectName = event.target.closest("[data-open-subject]")?.dataset.openSubject;
+
+      if (subjectName) {
+        activeSubject = subjectName;
+        document.getElementById("materialSubject").value = subjectName;
+        renderMaterials();
+        return;
+      }
+
+      if (materialId) materials = materials.filter(item => item.id !== Number(materialId));
+      if (lessonId) lessons = lessons.filter(item => item.id !== Number(lessonId));
+      if (adminId) admins = admins.filter(item => item.id !== Number(adminId));
+
+      if (materialId || lessonId || adminId) {
+        save();
+        renderAll();
+      }
+    });
+
+    document.getElementById("showAddMaterial").addEventListener("click", () => {
+      if (activeSubject) document.getElementById("materialSubject").value = activeSubject;
+      document.getElementById("materialTitle").focus();
+    });
+    document.getElementById("showAddLesson").addEventListener("click", () => {
+      document.getElementById("lessonWeek").value = activeWeek;
+      document.getElementById("lessonName").focus();
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
